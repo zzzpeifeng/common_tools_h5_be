@@ -1,0 +1,21 @@
+{
+  "language": "ts",
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "tsConfigPath": "tsconfig.json"
+  },
+  "schematics": {
+    "@nestjs/schematics:module": {
+      "spec": false
+    },
+    "@nestjs/schematics:service": {
+      "spec": false
+    },
+    "@nestjs/schematics:controller": {
+      "spec": false
+    }
+  }
+}
