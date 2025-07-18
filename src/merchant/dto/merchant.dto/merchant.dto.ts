@@ -1,6 +1,26 @@
 import { IsString, IsNotEmpty, IsPhoneNumber } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
+
+export class MerchantLoginDTO {
+  @ApiProperty({
+    description: '用户名',
+    example: 'testuser',
+  })
+  @IsString()
+  @IsNotEmpty()
+  username: string;
+
+  @ApiProperty({
+    description: '用户密码',
+    example: 'Test@123456',
+  })
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+}
+
+
 export class MerchantRegisterDTO {
   @ApiProperty({
     description: '用户名，唯一标识',
