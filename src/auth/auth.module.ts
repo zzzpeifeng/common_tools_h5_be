@@ -4,12 +4,10 @@ import { AuthController } from './auth.controller';
 import { MerchantModule } from '../merchant/merchant.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-// import { LocalStrategy } from './local.strategy';
-// import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
-    // MerchantModule,
+    MerchantModule,
     PassportModule,
     JwtModule.register({
       secret: process.env.TOKEN_SECRET, // 替换为实际的密钥

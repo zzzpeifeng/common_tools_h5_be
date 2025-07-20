@@ -1,10 +1,12 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Merchant } from './entities/merchant.entity';
-import { hash } from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { MerchantRegisterDTO } from './dto/merchant.dto/merchant.dto';
 import { InjectRepository } from '@nestjs/typeorm';
+import { MerchantLoginDto } from '../auth/dto/auth.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class MerchantService {
@@ -12,6 +14,7 @@ export class MerchantService {
     @InjectRepository(Merchant)
     private readonly merchantRepository: Repository<Merchant>,
     private configService: ConfigService,
+    private jwtService: JwtService,
   ) {}
 
   async register(merchantRegisterDTO:MerchantRegisterDTO) {
@@ -40,5 +43,37 @@ export class MerchantService {
     });
 
     return this.merchantRepository.save(newMerchant);
+  }
+
+  validateUser(userId: number) {
+    return this.merchantRepository.findOne({ where: { id: userId } });
+  }
+
+  async merchantLogin(merchantLoginDto: MerchantLoginDto){
+    const merchant = await this.merchantRepository.findOne({
+      where: {
+        email: merchantLoginDto.username,
+      },
+    });
+    if (!merchant) {
+      // throw new MerchantUserNotFoundOrPwdIncorrectException();
+      return {}
+    }
+    // 实际开发中需要使用 bcrypt 这样的库来加密密码
+    const passwordValid = await compare(merchantLoginDto.password, merchant.password);
+
+    if (!passwordValid) {
+      // throw new MerchantUserNotFoundOrPwdIncorrectException();
+      return {}
+    }
+
+    // 生成 token
+    const payload = {
+      username: merchant.username,
+      sub: merchant.id,
+    };
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
   }
 }

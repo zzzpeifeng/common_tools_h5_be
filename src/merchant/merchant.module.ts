@@ -11,5 +11,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   ],
   providers: [MerchantService],
   controllers: [MerchantController],
+  exports: [MerchantService],
 })
 export class MerchantModule {}
