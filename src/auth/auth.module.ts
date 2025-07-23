@@ -7,12 +7,11 @@ import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+    }),
     MerchantModule,
     PassportModule,
-    JwtModule.register({
-      secret: process.env.TOKEN_SECRET, // 替换为实际的密钥
-      signOptions: { expiresIn: '1h' },
-    }),
   ],
   providers: [AuthService,
     // LocalStrategy,

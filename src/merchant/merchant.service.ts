@@ -52,7 +52,7 @@ export class MerchantService {
   async merchantLogin(merchantLoginDto: MerchantLoginDto){
     const merchant = await this.merchantRepository.findOne({
       where: {
-        email: merchantLoginDto.username,
+        username: merchantLoginDto.username,
       },
     });
     if (!merchant) {
@@ -69,11 +69,11 @@ export class MerchantService {
 
     // 生成 token
     const payload = {
-      username: merchant.username,
-      sub: merchant.id,
+      // username: merchant.username,
+      merchantId: merchant.id,
     };
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: this.jwtService.sign(payload,{ expiresIn: '1d'}),
     };
   }
 }
