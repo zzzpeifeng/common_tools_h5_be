@@ -4,6 +4,8 @@ import { ConfigModule } from '@nestjs/config';
 import { MerchantModule } from './merchant/merchant.module';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from './auth/auth.module';
+import { OfflineStoreModule } from './offline_store/offline_store.module';
+
 
 @Module({
   imports: [
@@ -31,6 +33,7 @@ import { AuthModule } from './auth/auth.module';
     }),
     MerchantModule,
     AuthModule,
+    OfflineStoreModule,
   ],
 })
 export class AppModule {}

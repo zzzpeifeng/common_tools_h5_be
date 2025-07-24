@@ -73,7 +73,7 @@ export class MerchantService {
       merchantId: merchant.id,
     };
     return {
-      access_token: this.jwtService.sign(payload,{ expiresIn: '1d'}),
+      access_token: this.jwtService.sign(payload,{ expiresIn: process.env.JWT_SECRET }),
     };
   }
 }

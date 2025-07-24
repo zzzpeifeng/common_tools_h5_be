@@ -3,8 +3,9 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
+  UpdateDateColumn, ManyToMany,
 } from 'typeorm';
+import { OfflineStore } from '../../offline_store/entities/offline_store.entity';
 
 @Entity()
 export class Merchant {
@@ -40,4 +41,7 @@ export class Merchant {
   // 记录更新时间
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @ManyToMany(() => OfflineStore, offlineStore => offlineStore.merchants)
+  offlineStores: OfflineStore[]; // 管理的门店
 }
