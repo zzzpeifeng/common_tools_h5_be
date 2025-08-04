@@ -72,8 +72,15 @@ export class MerchantService {
       // username: merchant.username,
       merchantId: merchant.id,
     };
+
     return {
-      access_token: this.jwtService.sign(payload,{ expiresIn: process.env.JWT_SECRET }),
+      accessToken: this.jwtService.sign(payload,{ expiresIn: process.env.JWT_EXPIRATION_TIME }),
+      merchantInfo:{
+        name: merchant.name,
+        username: merchant.username,
+        phone: merchant.phone,
+        email: merchant.email,
+      },
     };
   }
 }

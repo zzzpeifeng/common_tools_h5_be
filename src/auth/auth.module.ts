@@ -4,6 +4,7 @@ import { AuthController } from './auth.controller';
 import { MerchantModule } from '../merchant/merchant.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
+import { JwtMerchantStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { JwtModule } from '@nestjs/jwt';
   providers: [AuthService,
     // LocalStrategy,
     // JwtStrategy
+    JwtMerchantStrategy
   ],
   controllers: [AuthController],
 })

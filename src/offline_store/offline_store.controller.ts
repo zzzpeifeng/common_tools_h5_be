@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put,Request , UseGuards } from '@nestjs/common';
 import { OfflineStoreService } from './offline_store.service';
 import { CreateOfflineStoreDto } from './dto/create-offlinestore.dto';
 import { UpdateOfflineStoreDto } from './dto/update-offlinestore';
@@ -20,8 +20,10 @@ export class OfflineStoreController {
     return this.offlineStoreService.findAll();
   }
 
-  @Get('merchant/:merchantId')
-  findByMerchantId(@Param('merchantId') merchantId: string) {
+  @Get('offline-store-by-merchant')
+  @UseGuards(MerchantAuthGuard)
+  findByMerchant(@Request() req: any) {
+    const merchantId = req.user.id;
     return this.offlineStoreService.findByMerchantId(+merchantId);
   }
 
