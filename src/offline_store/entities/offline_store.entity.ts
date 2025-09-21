@@ -19,6 +19,9 @@ export class OfflineStore {
   @Column({ default: true })
   isActive: boolean; // 门店状态，默认激活
 
+  @Column({ nullable: false })
+  icon: string;
+
   @ManyToMany(() => Merchant, merchant => merchant.offlineStores)
   @JoinTable()
   merchants: Merchant[]; // 关联的商家用户

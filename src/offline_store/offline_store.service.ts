@@ -62,7 +62,6 @@ export class OfflineStoreService {
   async findByMerchantId(merchantId: number) {
     return this.offlineStoreRepository.find({
       where: { merchants: { id: merchantId } },
-      relations: ['merchants'],
     });
   }
 
