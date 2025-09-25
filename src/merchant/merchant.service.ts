@@ -73,8 +73,9 @@ export class MerchantService {
       merchantId: merchant.id,
     };
 
+    console.log(process.env.JWT_EXPIRATION_TIME)
     return {
-      accessToken: this.jwtService.sign(payload,{ expiresIn: process.env.JWT_EXPIRATION_TIME }),
+      accessToken: this.jwtService.sign(payload,{ expiresIn: process.env.JWT_EXPIRATION_TIME || '30d' }),
       merchantInfo:{
         name: merchant.name,
         username: merchant.username,

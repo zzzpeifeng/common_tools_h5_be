@@ -1,5 +1,7 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable, OneToMany } from 'typeorm';
 import { Merchant } from '../../merchant/entities/merchant.entity';
+import { Member } from '../../member/entities/member.entity';
+
 
 @Entity()
 export class OfflineStore {
@@ -25,4 +27,9 @@ export class OfflineStore {
   @ManyToMany(() => Merchant, merchant => merchant.offlineStores)
   @JoinTable()
   merchants: Merchant[]; // 关联的商家用户
+
+
+  @OneToMany(() => Member, member => member.offlineStore)
+  members: Member[]; // 一个门店包含多个会员
+
 }
