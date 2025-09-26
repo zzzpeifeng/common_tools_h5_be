@@ -35,4 +35,6 @@ export class Member {
   offlineStoreId: number; // 添加门店ID关联
 
 
+
+
 }

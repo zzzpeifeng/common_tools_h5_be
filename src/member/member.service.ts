@@ -51,6 +51,19 @@ export class MemberService {
 
     const [members, total] = await this.memberRepository.findAndCount({
       where: { offlineStoreId: offlineStoreId },
+      select: {
+        id: true,
+        username: true,
+        phone: true,
+        email: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        offlineStore: {
+          name: true
+        }
+      },
+      relations: ['offlineStore'],
       skip,
       take: limit,
       order: { createdAt: 'DESC' }
@@ -66,9 +79,9 @@ export class MemberService {
   }
 
   // 查询单个会员
-  async getMemberById(id: number, storeId: number) {
+  async getMemberById(id: number, offlineStoreId: number) {
     const member = await this.memberRepository.findOne({
-      where: { id }
+      where: { id, offlineStoreId: offlineStoreId }
     });
 
     if (!member) {

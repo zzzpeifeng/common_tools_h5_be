@@ -1,4 +1,3 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 import {
   IsInt,
   IsOptional,
@@ -8,61 +7,6 @@ import {
   Matches,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-
-@Entity('member')
-export class Member {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @ApiProperty({
-    description: '会员名',
-    example: 'test-member',
-  })
-  @Column({ unique: true })
-  username: string;
-
-  @ApiProperty({
-    description: '会员pin码',
-    example: '1234',
-  })
-  @Column()
-  pin: string;
-
-  @ApiProperty({
-    description: '会员电话',
-    example: '13051522333',
-  })
-  @Column({ nullable: true })
-  phone?: string;
-
-  @ApiProperty({
-    description: '会员邮箱',
-    example: 'test@example.com',
-  })
-  @Column({ nullable: true })
-  email?: string;
-
-  @ApiProperty({
-    description: '会员是否激活',
-    example: true,
-  })
-  @Column({ default: true })
-  isActive: boolean;
-
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date;
-
-  @Column({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date;
-
-  // 添加门店关联
-  @IsInt()
-  offlineStoreId: number;
-}
 
 export class MemberRegisterDTO {
 
