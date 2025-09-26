@@ -14,7 +14,6 @@ export class OfflineStore {
   @Column()
   address: string; // 门店地址
 
-
   @Column({ unique: true })
   phone: string; // 门店电话  唯一字段
 
