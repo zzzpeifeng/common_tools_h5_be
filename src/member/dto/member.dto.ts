@@ -63,19 +63,19 @@ export class GetMembersDto {
   @IsInt()
   offlineStoreId: number;
 
-  @ApiProperty({
-    description: '页数',
-    example: 1,
-  })
-  @IsOptional()
-  page?: number = 1;
-
-  @ApiProperty({
-    description: '每页数量',
-    example: 10,
-  })
-  @IsOptional()
-  limit?: number = 10;
+  // @ApiProperty({
+  //   description: '页数',
+  //   example: 1,
+  // })
+  // @IsOptional()
+  // page?: number = 1;
+  //
+  // @ApiProperty({
+  //   description: '每页数量',
+  //   example: 10,
+  // })
+  // @IsOptional()
+  // limit?: number = 10;
 }
 
 // 添加删除DTO

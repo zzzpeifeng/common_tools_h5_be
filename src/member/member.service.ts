@@ -46,8 +46,7 @@ export class MemberService {
 
   // 查询会员列表
   async getMembers(query: GetMembersDto) {
-    const { offlineStoreId, page = 1, limit = 10 } = query;
-    const skip = (page - 1) * limit;
+    const { offlineStoreId } = query;
 
     const [members, total] = await this.memberRepository.findAndCount({
       where: { offlineStoreId: offlineStoreId },
@@ -59,25 +58,16 @@ export class MemberService {
         isActive: true,
         createdAt: true,
         updatedAt: true,
-        offlineStore: {
-          name: true
-        }
+        offlineStore: false,
       },
       relations: ['offlineStore'],
-      skip,
-      take: limit,
+      // skip,
+      // take: limit,
       order: { createdAt: 'DESC' }
     });
 
-    return {
-      members,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit)
-    };
+    return members;
   }
-
   // 查询单个会员
   async getMemberById(id: number, offlineStoreId: number) {
     const member = await this.memberRepository.findOne({
