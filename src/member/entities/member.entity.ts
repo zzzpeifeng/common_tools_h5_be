@@ -33,8 +33,4 @@ export class Member {
   // 添加门店关联
   @Column({ name: 'offlineStoreId' })
   offlineStoreId: number; // 添加门店ID关联
-
-
-
-
 }

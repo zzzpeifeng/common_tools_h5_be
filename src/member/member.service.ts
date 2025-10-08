@@ -5,12 +5,18 @@ import { hash } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MemberRegisterDTO, GetMembersDto, DeleteMemberDto } from './dto/member.dto';
+import { Point } from './entities/point.entity';
+import { PointOperationLog } from './entities/point-operation-log';
 
 @Injectable()
 export class MemberService {
   constructor(
     @InjectRepository(Member)
     private readonly memberRepository: Repository<Member>,
+    @InjectRepository(Point)  // 新增
+    private readonly pointRepository: Repository<Point>,
+    @InjectRepository(PointOperationLog)  // 新增
+    private readonly pointOperationLogRepository: Repository<PointOperationLog>,
     private configService: ConfigService,
   ) {}
 
@@ -23,25 +29,63 @@ export class MemberService {
     }
 
     const existingMember = await this.memberRepository.findOne({
-      where: [{ username }, { phone }],
+      where: [{ phone }],
     });
 
     if (existingMember) {
-      throw new ConflictException('用户名或电话已存在');
+      throw new ConflictException('电话已存在');
     }
 
     const saltRounds = this.configService.get<number>('BCRYPT_SALT_ROUNDS') || 10;
     const hashedPassword = await hash(password, saltRounds);
 
-    const newMember = this.memberRepository.create({
-      username,
-      password: hashedPassword,
-      phone,
-      email,
-      offlineStoreId  // 关联门店
-    });
 
-    return this.memberRepository.save(newMember);
+    // 开启事务处理
+    const queryRunner = this.memberRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try{
+      const newMember = this.memberRepository.create({
+        username,
+        password: hashedPassword,
+        phone,
+        email,
+        offlineStoreId  // 关联门店
+      });
+      const savedMember = await queryRunner.manager.save(newMember);
+
+      // 创建初始积分记录
+      const pointRecord = queryRunner.manager.create(Point, {
+        memberId: savedMember.id,
+        offlineStoreId: offlineStoreId,
+        points: 0
+      });
+      await queryRunner.manager.save(pointRecord);
+
+      // 创建积分操作日志
+      const pointOperationLog = queryRunner.manager.create(PointOperationLog, {
+        memberId: savedMember.id,
+        offlineStoreId: offlineStoreId,
+        points: 0,
+        balance: 0,
+        operationType: 'INITIAL',
+        operatorId: null, // 初始创建时可能没有操作人
+        operatorName: 'SYSTEM',
+        operatorType: 'system',
+        remark: '会员注册初始化积分'
+      });
+      await queryRunner.manager.save(pointOperationLog);
+      await queryRunner.commitTransaction();
+      return savedMember;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    }finally {
+      await queryRunner.release();
+    }
+
+
   }
 
   // 查询会员列表

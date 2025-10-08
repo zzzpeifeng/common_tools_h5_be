@@ -20,8 +20,8 @@ export class MemberController {
 
   // 查询单个会员
   @Get(':id')
-  findOne(@Param('id') id: string, @Query('offlineStoreId') storeId: string) {
-    return this.memberService.getMemberById(+id, +storeId);
+  findOne(@Param('id') id: string, @Query('offlineStoreId') offlineStoreId: string) {
+    return this.memberService.getMemberById(+id, +offlineStoreId);
   }
 
   // 删除会员

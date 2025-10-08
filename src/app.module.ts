@@ -36,6 +36,7 @@ import { MemberModule } from './member/member.module';
     AuthModule,
     OfflineStoreModule,
     MemberModule,
+
   ],
 })
 export class AppModule {}
