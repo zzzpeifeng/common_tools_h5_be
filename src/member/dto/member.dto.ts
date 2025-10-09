@@ -1,5 +1,5 @@
 import {
-  IsInt,
+  IsInt, IsNumber,
   IsOptional,
   IsPhoneNumber,
   IsString,
@@ -17,6 +17,13 @@ export class MemberRegisterDTO {
   @IsString()
   @Length(4, 20)
   username: string;
+
+  @ApiProperty({
+    description: '初始积分',
+    example: 1,
+  })
+  @IsNumber()
+  points: number;
 
 
   @ApiProperty({

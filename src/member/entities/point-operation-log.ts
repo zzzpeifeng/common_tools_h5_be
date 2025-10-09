@@ -12,10 +12,10 @@ export class PointOperationLog {
   offlineStoreId: number;
 
   @Column({ type: 'int' })
-  points: number;
+  pointsChange: number; // 积分变化
 
   @Column({ type: 'int' })
-  balance: number;
+  balance: number;  // 积分余额
 
   @Column({ name: 'operation_type', length: 50 })
   operationType: string;

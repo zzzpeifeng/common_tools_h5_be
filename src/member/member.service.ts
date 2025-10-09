@@ -23,7 +23,7 @@ export class MemberService {
   // 添加会员
   async createMember(memberRegisterDTO: MemberRegisterDTO,merchantId:number) {
 
-    const { username, password, passwordConfirm, phone, email, offlineStoreId } = memberRegisterDTO;
+    const { username,points, password, passwordConfirm, phone, email, offlineStoreId } = memberRegisterDTO;
 
     if (password !== passwordConfirm) {
       throw new ConflictException('两次密码不一致');
@@ -58,9 +58,9 @@ export class MemberService {
 
       // 创建初始积分记录
       const pointRecord = queryRunner.manager.create(Point, {
-        memberId: savedMember.id,
+        member: savedMember,
         offlineStoreId: offlineStoreId,
-        points: 0
+        points: points
       });
       await queryRunner.manager.save(pointRecord);
 
@@ -68,8 +68,8 @@ export class MemberService {
       const pointOperationLog = queryRunner.manager.create(PointOperationLog, {
         member: savedMember,
         offlineStoreId: offlineStoreId,
-        points: 0,
-        balance: 0,
+        pointsChange: points,
+        balance: points,
         operationType: 'INITIAL',
         operatorId: null, // 初始创建时可能没有操作人
         operatorName: 'SYSTEM',
