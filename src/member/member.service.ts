@@ -21,7 +21,8 @@ export class MemberService {
   ) {}
 
   // 添加会员
-  async createMember(memberRegisterDTO: MemberRegisterDTO) {
+  async createMember(memberRegisterDTO: MemberRegisterDTO,merchantId:number) {
+
     const { username, password, passwordConfirm, phone, email, offlineStoreId } = memberRegisterDTO;
 
     if (password !== passwordConfirm) {
@@ -65,7 +66,7 @@ export class MemberService {
 
       // 创建积分操作日志
       const pointOperationLog = queryRunner.manager.create(PointOperationLog, {
-        memberId: savedMember.id,
+        member: savedMember,
         offlineStoreId: offlineStoreId,
         points: 0,
         balance: 0,
@@ -73,7 +74,8 @@ export class MemberService {
         operatorId: null, // 初始创建时可能没有操作人
         operatorName: 'SYSTEM',
         operatorType: 'system',
-        remark: '会员注册初始化积分'
+        remark: '会员注册初始化积分',
+        merchantId: merchantId
       });
       await queryRunner.manager.save(pointOperationLog);
       await queryRunner.commitTransaction();
@@ -115,20 +117,33 @@ export class MemberService {
   // 查询单个会员
   async getMemberById(id: number, offlineStoreId: number) {
     const member = await this.memberRepository.findOne({
-      where: { id, offlineStoreId: offlineStoreId }
+      where: { id, offlineStoreId },
+      relations: ['point', 'pointOperationLogs']
     });
 
     if (!member) {
       throw new NotFoundException('会员不存在');
     }
-
-    return member;
+    console.log(member)
+    return {
+      id: member.id,
+      username: member.username,
+      phone: member.phone,
+      createdAt: member.createdAt.toISOString().split('T')[0],
+      points:  member?.point.points,
+      pointOperationLogs: member.pointOperationLogs.map(log => ({
+        ...log,
+        createdAt: log.optionTimeAt ? log.optionTimeAt.toISOString().split('T')[0] : null
+      }))
+    };
   }
 
   // 删除会员
   async deleteMember(dto: DeleteMemberDto) {
     const { id, offlineStoreId } = dto;
-    const member = await this.getMemberById(id, offlineStoreId);
+    const member = await this.memberRepository.findOne({
+      where: { id, offlineStoreId }
+    })
 
     if (!member) {
       throw new NotFoundException('会员不存在');

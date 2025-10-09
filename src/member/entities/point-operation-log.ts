@@ -1,13 +1,12 @@
 // src/point/entities/point-operation-log.entity.ts
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Point } from './point.entity';
+import { Member } from './member.entity';
 
 @Entity('point_operation_log')
 export class PointOperationLog {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column({ name: 'member_id' })
-  memberId: number;
 
   @Column({ name: 'offline_store_id' })
   offlineStoreId: number;
@@ -32,4 +31,10 @@ export class PointOperationLog {
 
   @CreateDateColumn({ name: 'option_time_at' })
   optionTimeAt: Date;
+
+  // 多对一关联member表
+  @ManyToOne(() => Member, member => member.pointOperationLogs)
+  @JoinColumn({ name: 'memberId' })
+  member: Member;
+
 }
