@@ -102,3 +102,52 @@ export class DeleteMemberDto {
   @IsInt()
   offlineStoreId: number;
 }
+
+
+// 积分消费DTO
+export class ConsumePointsDto {
+  @ApiProperty({
+    description: '会员ID',
+    example: 1,
+  })
+  @IsInt()
+  memberId: number;
+
+  @ApiProperty({
+    description: '门店ID',
+    example: 1,
+  })
+  @IsInt()
+  offlineStoreId: number;
+
+  @ApiProperty({
+    description: '消费积分',
+    example: 1,
+  })
+  @IsInt()
+  points: number;
+
+  @ApiProperty({
+    description: '消费备注',
+    example: '消费备注',
+  })
+  @IsString()
+  remark: string;
+
+  // 操作人
+  @ApiProperty({
+    description: '操作人ID',
+    example: 1,
+  })
+  @IsInt()
+  merchantId: number;
+
+  @ApiProperty({
+    description: '消费密码',
+    example: '1111',
+  })
+  @IsString()
+  password: string;
+
+
+}

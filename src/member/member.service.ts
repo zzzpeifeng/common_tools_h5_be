@@ -1,10 +1,19 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Member } from './entities/member.entity';
-import { hash } from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MemberRegisterDTO, GetMembersDto, DeleteMemberDto } from './dto/member.dto';
+import {
+  MemberRegisterDTO,
+  GetMembersDto,
+  DeleteMemberDto,
+  ConsumePointsDto,
+} from './dto/member.dto';
 import { Point } from './entities/point.entity';
 import { PointOperationLog } from './entities/point-operation-log';
 
@@ -13,17 +22,24 @@ export class MemberService {
   constructor(
     @InjectRepository(Member)
     private readonly memberRepository: Repository<Member>,
-    @InjectRepository(Point)  // 新增
+    @InjectRepository(Point) // 新增
     private readonly pointRepository: Repository<Point>,
-    @InjectRepository(PointOperationLog)  // 新增
+    @InjectRepository(PointOperationLog) // 新增
     private readonly pointOperationLogRepository: Repository<PointOperationLog>,
     private configService: ConfigService,
   ) {}
 
   // 添加会员
-  async createMember(memberRegisterDTO: MemberRegisterDTO,merchantId:number) {
-
-    const { username,points, password, passwordConfirm, phone, email, offlineStoreId } = memberRegisterDTO;
+  async createMember(memberRegisterDTO: MemberRegisterDTO, merchantId: number) {
+    const {
+      username,
+      points,
+      password,
+      passwordConfirm,
+      phone,
+      email,
+      offlineStoreId,
+    } = memberRegisterDTO;
 
     if (password !== passwordConfirm) {
       throw new ConflictException('两次密码不一致');
@@ -37,22 +53,23 @@ export class MemberService {
       throw new ConflictException('电话已存在');
     }
 
-    const saltRounds = this.configService.get<number>('BCRYPT_SALT_ROUNDS') || 10;
+    const saltRounds =
+      this.configService.get<number>('BCRYPT_SALT_ROUNDS') || 10;
     const hashedPassword = await hash(password, saltRounds);
 
-
     // 开启事务处理
-    const queryRunner = this.memberRepository.manager.connection.createQueryRunner();
+    const queryRunner =
+      this.memberRepository.manager.connection.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-    try{
+    try {
       const newMember = this.memberRepository.create({
         username,
         password: hashedPassword,
         phone,
         email,
-        offlineStoreId  // 关联门店
+        offlineStoreId, // 关联门店
       });
       const savedMember = await queryRunner.manager.save(newMember);
 
@@ -60,7 +77,7 @@ export class MemberService {
       const pointRecord = queryRunner.manager.create(Point, {
         member: savedMember,
         offlineStoreId: offlineStoreId,
-        points: points
+        points: points,
       });
       await queryRunner.manager.save(pointRecord);
 
@@ -75,7 +92,7 @@ export class MemberService {
         operatorName: 'SYSTEM',
         operatorType: 'system',
         remark: '会员注册初始化积分',
-        merchantId: merchantId
+        merchantId: merchantId,
       });
       await queryRunner.manager.save(pointOperationLog);
       await queryRunner.commitTransaction();
@@ -83,17 +100,14 @@ export class MemberService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
-    }finally {
+    } finally {
       await queryRunner.release();
     }
-
-
   }
 
   // 查询会员列表
   async getMembers(query: GetMembersDto) {
     const { offlineStoreId } = query;
-
     const [members, total] = await this.memberRepository.findAndCount({
       where: { offlineStoreId: offlineStoreId },
       select: {
@@ -109,41 +123,98 @@ export class MemberService {
       relations: ['offlineStore'],
       // skip,
       // take: limit,
-      order: { createdAt: 'DESC' }
+      order: { createdAt: 'DESC' },
     });
 
     return members;
   }
+
   // 查询单个会员
   async getMemberById(id: number, offlineStoreId: number) {
     const member = await this.memberRepository.findOne({
       where: { id, offlineStoreId },
-      relations: ['point', 'pointOperationLogs']
+      relations: ['point', 'pointOperationLogs'],
     });
 
     if (!member) {
       throw new NotFoundException('会员不存在');
     }
-    console.log(member)
+    console.log(member);
     return {
       id: member.id,
       username: member.username,
       phone: member.phone,
       createdAt: member.createdAt.toISOString().split('T')[0],
-      points:  member?.point.points,
-      pointOperationLogs: member.pointOperationLogs.map(log => ({
+      points: member?.point.points,
+      pointOperationLogs: member.pointOperationLogs.map((log) => ({
         ...log,
-        createdAt: log.optionTimeAt ? log.optionTimeAt.toISOString().split('T')[0] : null
-      }))
+        createdAt: log.optionTimeAt
+          ? log.optionTimeAt.toISOString().split('T')[0]
+          : null,
+      })),
     };
+  }
+
+  // 积分消费
+  async pointsConsume(dto: ConsumePointsDto) {
+    const { memberId, offlineStoreId, points, merchantId, remark } = dto;
+    // 检查memberid
+    const member = await this.memberRepository.findOne({
+      where: { id: memberId, offlineStoreId },
+      relations: ['point'],
+    });
+    if (!member) {
+      throw new NotFoundException('会员不存在');
+    }
+    // 校验消费密码
+    // 实际开发中需要使用 bcrypt 这样的库来加密密码
+    const passwordValid = await compare(dto.password,member.password);
+    if (!passwordValid) {
+      throw new ConflictException('密码错误');
+    }
+
+    // 开启事务处理
+    const queryRunner =
+      this.memberRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try{
+      // 扣除会员积分
+      member.point.points -= points;
+      await queryRunner.manager.save(member.point);
+      // 创建积分操作日志
+      const pointOperationLog = queryRunner.manager.create(PointOperationLog, {
+        member: member,
+      })
+      pointOperationLog.offlineStoreId = offlineStoreId;
+      pointOperationLog.pointsChange = -points;
+      pointOperationLog.balance = member.point.points;
+      pointOperationLog.operationType = 'CONSUME';
+      pointOperationLog.remark = remark;
+      pointOperationLog.merchantId = merchantId;
+      await queryRunner.manager.save(pointOperationLog);
+      await queryRunner.commitTransaction();
+      return member;
+    }catch (e) {
+      await queryRunner.rollbackTransaction();
+      throw e;
+
+
+    }finally {
+      await queryRunner.release();
+    }
+
+
+
   }
 
   // 删除会员
   async deleteMember(dto: DeleteMemberDto) {
     const { id, offlineStoreId } = dto;
     const member = await this.memberRepository.findOne({
-      where: { id, offlineStoreId }
-    })
+      where: { id, offlineStoreId },
+    });
 
     if (!member) {
       throw new NotFoundException('会员不存在');
